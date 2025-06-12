@@ -5,7 +5,7 @@ from rest_framework import throttling
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework import status
-from .es_client import search_media  # ✅ Clean import
+from .es_client import search_media, normalize_hit
 import logging
 
 logger = logging.getLogger(__name__)
@@ -43,7 +43,7 @@ class MediaSearchAPIView(APIView):
         try:
             # ✅ Use centralized search logic
             hits, total = search_media(query, page=page, page_size=page_size)
-            results = [hit['_source'] for hit in hits]
+            results = [normalize_hit(hit) for hit in hits]
 
             return Response({
                 "count": total,

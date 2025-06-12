@@ -10,6 +10,8 @@ ES_USER = 'elastic'
 ES_PASS = 'rQQtbktwzFqAJS1h8YjP'
 ES_INDEX = 'imago'
 
+BASE_THUMBNAIL_URL = "https://www.imago-images.de/bild"
+
 # Shared Elasticsearch client
 es = Elasticsearch(
     ES_HOST,
@@ -78,3 +80,22 @@ def search_media(query, page=1, page_size=10):
     except Exception as e:
         logger.error(f"Unexpected error during search: {e}")
         return [], 0
+    
+def build_thumbnail_url(db, bildnummer):
+    # Pad bildnummer to 10 chars with leading zeros
+    bildnummer_str = str(bildnummer).zfill(10)
+    return f"{BASE_THUMBNAIL_URL}/{db}/{bildnummer_str}/s.jpg"
+
+def normalize_hit(hit):
+    source = hit.get('_source', {})
+    # Handle missing fields with defaults
+    db = source.get('db', 'st')  # default to 'st' if missing
+    bildnummer = source.get('bildnummer', '0')
+    
+    # Build thumbnail URL
+    thumbnail_url = build_thumbnail_url(db, bildnummer)
+    
+    # Include thumbnail URL in the result dict
+    source['thumbnail_url'] = thumbnail_url
+    
+    return source
