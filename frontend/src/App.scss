@@ -1,0 +1,73 @@
+.app {
+  padding: 2rem;
+  font-family: sans-serif;
+
+  h1 {
+    margin-bottom: 1.5rem;
+  }
+
+  form {
+    margin-bottom: 1rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+
+    input {
+      flex: 1 1 250px;
+      padding: 0.5rem;
+      font-size: 1rem;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+  }
+
+  .error {
+    color: red;
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+
+    .card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+
+      img {
+        width: 100%;
+        margin-bottom: 0.5rem;
+      }
+
+      p {
+        margin: 0.3rem 0;
+        font-size: 0.95rem;
+
+        &:last-child {
+          font-size: 0.9rem;
+        }
+      }
+    }
+  }
+
+  .pagination {
+    display: flex;
+    justify-content: center;
+    margin-top: 2rem;
+    gap: 1rem;
+
+    button {
+      padding: 0.5rem 1rem;
+      font-size: 1rem;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .results-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+}
