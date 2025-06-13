@@ -1,8 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import './App.scss';
 import Pagination from './components/Pagination';
 import SearchControl from './components/SearchControls';
 import MediaCard from './components/MediaCard';
+import { PAGE_SIZE } from './config';
+import { fetchMedia } from './services/mediaService';
 
 function App() {
   const [query, setQuery] = useState('');
@@ -16,62 +18,49 @@ function App() {
   const [searchAfter, setSearchAfter] = useState(null);
   const [lastElement, setLastElement] = useState(null);
 
-  const pageSize = 10;
-
-  const fetchResults = async (
+  const handleFetch = async (
     searchQuery,
     pageNumber = 1,
     append = false,
-    searchType = '',
+    type = '',
     startDate = '',
     endDate = '',
-    searchAfterCursor = null
+    cursor = null
   ) => {
-    if (searchType !== 'date' && !searchQuery) return;
     setLoading(true);
     setError(null);
 
-    let endpoint = '';
-    const base = 'http://localhost:8000/api/media';
+    const { data, error } = await fetchMedia({
+      searchQuery,
+      pageNumber,
+      append,
+      searchType: type,
+      startDate,
+      endDate,
+      searchAfterCursor: cursor,
+      autoScroll,
+    });
 
-    if (searchType === 'bildnummer') {
-      endpoint = `${base}/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
-    } else if (searchType === 'photographer') {
-      endpoint = `${base}/search/by-fotograf/?fotograf=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
-    } else if (searchType === 'date') {
-      endpoint = `${base}/search/by-datum/?datum_von=${startDate}&datum_bis=${endDate}&page=${pageNumber}&page_size=${pageSize}`;
-    } else {
-      endpoint = `${base}/search/?q=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
-      if (autoScroll && searchAfterCursor) {
-        endpoint += `&search_after=${searchAfterCursor}`;
-      }
-    }
-
-    try {
-      const response = await fetch(endpoint);
-      if (!response.ok) throw new Error('Failed to fetch');
-      const data = await response.json();
-
+    if (error) {
+      setError(error);
+    } else if (data) {
       setResults((prev) => (append ? [...prev, ...data.results] : data.results));
       setPage(data.page);
-      setTotalPages(Math.ceil(data.count / pageSize));
+      setTotalPages(Math.ceil(data.count / PAGE_SIZE));
       setSearchAfter(data.next_search_after || null);
-    } catch (err) {
-      setError(err.message || 'Something went wrong.');
-    } finally {
-      setLoading(false);
     }
+
+    setLoading(false);
   };
 
-  // Infinite scroll logic with callback ref
   useEffect(() => {
     if (!autoScroll || loading || !searchAfter || !lastElement) return;
 
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting) {
-          console.log('🚀 Last element visible - triggering fetch...');
-          fetchResults(query, 1, true, searchType, '', '', searchAfter);
+          console.log('🚀 Fetching more via infinite scroll...');
+          handleFetch(query, 1, true, searchType, '', '', searchAfter);
         }
       },
       {
@@ -82,7 +71,6 @@ function App() {
     );
 
     observer.observe(lastElement);
-
     return () => {
       if (lastElement) observer.unobserve(lastElement);
       observer.disconnect();
@@ -90,17 +78,15 @@ function App() {
   }, [autoScroll, loading, searchAfter, lastElement, query, page, searchType]);
 
   const handlePageChange = (newPage) => {
-    fetchResults(query, newPage);
+    handleFetch(query, newPage, false, searchType);
   };
 
   const handleModeToggle = () => {
     const nextMode = !autoScroll;
-
     if (!nextMode) {
-      setResults((prev) => prev.slice(0, pageSize));
+      setResults((prev) => prev.slice(0, PAGE_SIZE));
       setPage(1);
     }
-
     setAutoScroll(nextMode);
   };
 
@@ -116,10 +102,10 @@ function App() {
           setSearchType(type);
 
           if (type === 'date') {
-            fetchResults(null, 1, false, type, q.startDate, q.endDate);
+            handleFetch(null, 1, false, type, q.startDate, q.endDate);
           } else {
             setQuery(q);
-            fetchResults(q, 1, false, type);
+            handleFetch(q, 1, false, type);
           }
         }}
         onToggleMode={handleModeToggle}
@@ -134,7 +120,7 @@ function App() {
           const isLast = results.length === idx + 1;
           return (
             <MediaCard
-              key={item.bildnummer || `media-${idx}`}
+              key={`${item.db}-${item.bildnummer}`}
               item={item}
               setRef={isLast && autoScroll ? (node) => setLastElement(node) : undefined}
             />
@@ -143,11 +129,7 @@ function App() {
       </div>
 
       {!autoScroll && totalPages > 1 && (
-        <Pagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={handlePageChange}
-        />
+        <Pagination currentPage={page} totalPages={totalPages} onPageChange={handlePageChange} />
       )}
     </div>
   );

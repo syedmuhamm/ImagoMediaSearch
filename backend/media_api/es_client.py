@@ -89,7 +89,7 @@ def search_media(query=None, page=1, page_size=10, fotografen=None,
     try:
         query_body = build_query(query, fotografen, datum_von, datum_bis, bildnummer)
 
-        # Always sort by bildnummer ascending for consistent pagination
+        # sort by bildnummer ascending for consistent pagination
         query_body["sort"] = [
             {"bildnummer": "asc"}
         ]
