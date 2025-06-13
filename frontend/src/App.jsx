@@ -1,7 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import './App.scss';
 import Pagination from './components/Pagination';
 import SearchControl from './components/SearchControls';
+import MediaCard from './components/MediaCard';
 
 function App() {
   const [query, setQuery] = useState('');
@@ -11,10 +12,11 @@ function App() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState(null);
-  const [autoScroll, setAutoScroll] = useState(false);
+  const [autoScroll, setAutoScroll] = useState(true);
+  const [searchAfter, setSearchAfter] = useState(null);
+  const [lastElement, setLastElement] = useState(null);
 
   const pageSize = 10;
-  const observer = useRef();
 
   const fetchResults = async (
     searchQuery,
@@ -22,31 +24,38 @@ function App() {
     append = false,
     searchType = '',
     startDate = '',
-    endDate = ''
+    endDate = '',
+    searchAfterCursor = null
   ) => {
     if (searchType !== 'date' && !searchQuery) return;
     setLoading(true);
     setError(null);
 
     let endpoint = '';
+    const base = 'http://localhost:8000/api/media';
 
     if (searchType === 'bildnummer') {
-      endpoint = `http://localhost:8000/api/media/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+      endpoint = `${base}/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
     } else if (searchType === 'photographer') {
-      endpoint = `http://localhost:8000/api/media/search/by-fotograf/?fotograf=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+      endpoint = `${base}/search/by-fotograf/?fotograf=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
     } else if (searchType === 'date') {
-      endpoint = `http://localhost:8000/api/media/search/by-datum/?datum_von=${startDate}&datum_bis=${endDate}&page=${pageNumber}&page_size=${pageSize}`;
+      endpoint = `${base}/search/by-datum/?datum_von=${startDate}&datum_bis=${endDate}&page=${pageNumber}&page_size=${pageSize}`;
     } else {
-      endpoint = `http://localhost:8000/api/media/search/?q=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+      endpoint = `${base}/search/?q=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+      if (autoScroll && searchAfterCursor) {
+        endpoint += `&search_after=${searchAfterCursor}`;
+      }
     }
 
     try {
       const response = await fetch(endpoint);
       if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
+
       setResults((prev) => (append ? [...prev, ...data.results] : data.results));
       setPage(data.page);
       setTotalPages(Math.ceil(data.count / pageSize));
+      setSearchAfter(data.next_search_after || null);
     } catch (err) {
       setError(err.message || 'Something went wrong.');
     } finally {
@@ -54,23 +63,31 @@ function App() {
     }
   };
 
-
-  // Infinite scroll
-  const lastItemRef = useRef();
+  // Infinite scroll logic with callback ref
   useEffect(() => {
-    if (!autoScroll || loading || page >= totalPages) return;
+    if (!autoScroll || loading || !searchAfter || !lastElement) return;
 
-    const handleObserver = (entries) => {
-      const target = entries[0];
-      if (target.isIntersecting) {
-        fetchResults(query, page + 1, true);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          console.log('🚀 Last element visible - triggering fetch...');
+          fetchResults(query, 1, true, searchType, '', '', searchAfter);
+        }
+      },
+      {
+        root: null,
+        rootMargin: '100px',
+        threshold: 0.1,
       }
-    };
+    );
 
-    observer.current = new IntersectionObserver(handleObserver);
-    if (lastItemRef.current) observer.current.observe(lastItemRef.current);
-    return () => observer.current?.disconnect();
-  }, [loading, page, autoScroll]);
+    observer.observe(lastElement);
+
+    return () => {
+      if (lastElement) observer.unobserve(lastElement);
+      observer.disconnect();
+    };
+  }, [autoScroll, loading, searchAfter, lastElement, query, page, searchType]);
 
   const handlePageChange = (newPage) => {
     fetchResults(query, newPage);
@@ -80,9 +97,7 @@ function App() {
     const nextMode = !autoScroll;
 
     if (!nextMode) {
-      const start = 0;
-      const end = pageSize;
-      setResults((prev) => prev.slice(start, end));
+      setResults((prev) => prev.slice(0, pageSize));
       setPage(1);
     }
 
@@ -93,20 +108,23 @@ function App() {
     <div className="app">
       <h1>📸 Media Search</h1>
 
-    <SearchControl
-  onSearch={(q, type) => {
-    if (type === 'date') {
-      setSearchType(type);
-      fetchResults(null, 1, false, type, q.startDate, q.endDate);
-      } else {
-          setQuery(q);
+      <SearchControl
+        onSearch={(q, type) => {
+          setPage(1);
+          setSearchAfter(null);
+          setResults([]);
           setSearchType(type);
-          fetchResults(q, 1, false, type);
-        }
-    }}
-      onToggleMode={handleModeToggle}
-      autoScroll={autoScroll}
-    />
+
+          if (type === 'date') {
+            fetchResults(null, 1, false, type, q.startDate, q.endDate);
+          } else {
+            setQuery(q);
+            fetchResults(q, 1, false, type);
+          }
+        }}
+        onToggleMode={handleModeToggle}
+        autoScroll={autoScroll}
+      />
 
       {loading && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}
@@ -115,30 +133,11 @@ function App() {
         {results.map((item, idx) => {
           const isLast = results.length === idx + 1;
           return (
-            <div
-              key={item.bildnummer || "Contact support for image number"}
-              className="card"
-              ref={isLast && autoScroll ? lastItemRef : null}
-            >
-              <img
-                src={item.thumbnail_url || "/placeholder.jpg"}
-                alt={item.suchtext || "Kein Bildtext"}
-                style={{ width: '100%', objectFit: 'cover', height: '200px' }}
-                onError={(e) => {
-                  if (e.target.src !== window.location.origin + "/placeholder.jpg") {
-                    e.target.src = "/placeholder.jpg";
-                  }
-                }}
-              />
-              <p><strong>{item.bildnummer || "Unbekannt"}</strong></p>
-              <p>{item.datum ? item.datum.slice(0, 10) : "Datum unbekannt"}</p>
-              <p>{item.fotografen || "Fotograf nicht angegeben"}</p>
-              <p style={{ fontSize: '0.9rem' }}>
-                {(item.suchtext && item.suchtext.length > 0)
-                  ? `${item.suchtext.slice(0, 100)}...`
-                  : "Keine Beschreibung verfügbar"}
-              </p>
-            </div>
+            <MediaCard
+              key={item.bildnummer || `media-${idx}`}
+              item={item}
+              setRef={isLast && autoScroll ? (node) => setLastElement(node) : undefined}
+            />
           );
         })}
       </div>

@@ -68,7 +68,7 @@ function SearchControl({ onSearch, onToggleMode, autoScroll }) {
 
       <button type="submit">Search</button>
       <button type="button" onClick={onToggleMode}>
-        {autoScroll ? '🔢 Pagination' : '🔁 Auto Scroll'}
+        {autoScroll ? 'Switch to Pagination' : 'Switch to Infinite Scroll'}
       </button>
     </form>
   );

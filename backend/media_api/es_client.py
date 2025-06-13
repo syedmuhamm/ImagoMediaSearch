@@ -83,11 +83,23 @@ def build_query(query=None, fotografen=None, datum_von=None, datum_bis=None, bil
 
 # ========== Search Handler ==========
 
-def search_media(query=None, page=1, page_size=10, fotografen=None, datum_von=None, datum_bis=None, bildnummer=None):
-    from_ = (page - 1) * page_size
+def search_media(query=None, page=1, page_size=10, fotografen=None,
+                 datum_von=None, datum_bis=None, bildnummer=None,
+                 search_after=None):
     try:
         query_body = build_query(query, fotografen, datum_von, datum_bis, bildnummer)
-        query_body["from"] = from_
+
+        # Always sort by bildnummer ascending for consistent pagination
+        query_body["sort"] = [
+            {"bildnummer": "asc"}
+        ]
+
+        if search_after is not None:
+            query_body["search_after"] = [search_after]
+        else:
+            from_ = (page - 1) * page_size
+            query_body["from"] = from_
+
         query_body["size"] = page_size
 
         logger.debug(f"ES Query: {query_body}")
