@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './App.scss';
-import Pagination from './components/pagination';
+import Pagination from './components/Pagination';
+import SearchControl from './components/SearchControls';
 
 function App() {
   const [query, setQuery] = useState('');
+  const [searchType, setSearchType] = useState('');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -14,15 +16,32 @@ function App() {
   const pageSize = 10;
   const observer = useRef();
 
-  const fetchResults = async (searchQuery, pageNumber = 1, append = false) => {
-    if (!searchQuery) return;
+  const fetchResults = async (
+    searchQuery,
+    pageNumber = 1,
+    append = false,
+    searchType = '',
+    startDate = '',
+    endDate = ''
+  ) => {
+    if (searchType !== 'date' && !searchQuery) return;
     setLoading(true);
     setError(null);
 
+    let endpoint = '';
+
+    if (searchType === 'bildnummer') {
+      endpoint = `http://localhost:8000/api/media/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+    } else if (searchType === 'photographer') {
+      endpoint = `http://localhost:8000/api/media/search/by-fotograf/?fotograf=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+    } else if (searchType === 'date') {
+      endpoint = `http://localhost:8000/api/media/search/by-datum/?datum_von=${startDate}&datum_bis=${endDate}&page=${pageNumber}&page_size=${pageSize}`;
+    } else {
+      endpoint = `http://localhost:8000/api/media/search/?q=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`;
+    }
+
     try {
-      const response = await fetch(
-        `http://localhost:8000/api/media/search/?q=${encodeURIComponent(searchQuery)}&page=${pageNumber}&page_size=${pageSize}`
-      );
+      const response = await fetch(endpoint);
       if (!response.ok) throw new Error('Failed to fetch');
       const data = await response.json();
       setResults((prev) => (append ? [...prev, ...data.results] : data.results));
@@ -35,10 +54,6 @@ function App() {
     }
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    fetchResults(query, 1);
-  };
 
   // Infinite scroll
   const lastItemRef = useRef();
@@ -64,7 +79,6 @@ function App() {
   const handleModeToggle = () => {
     const nextMode = !autoScroll;
 
-    // Switching from infinite scroll to pagination
     if (!nextMode) {
       const start = 0;
       const end = pageSize;
@@ -79,23 +93,20 @@ function App() {
     <div className="app">
       <h1>📸 Media Search</h1>
 
-      <form onSubmit={handleSearch}>
-        <input
-          type="text"
-          placeholder="Search media..."
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-        />
-        <button type="submit">Search</button>
-        <button
-          type="button"
-          style={{ marginLeft: '1rem' }}
-          onClick={handleModeToggle}
-        >
-          {autoScroll ? '🔢 Switch to Pagination' : '🔁 Switch to Auto Scroll'}
-        </button>
-
-      </form>
+    <SearchControl
+  onSearch={(q, type) => {
+    if (type === 'date') {
+      setSearchType(type);
+      fetchResults(null, 1, false, type, q.startDate, q.endDate);
+      } else {
+          setQuery(q);
+          setSearchType(type);
+          fetchResults(q, 1, false, type);
+        }
+    }}
+      onToggleMode={handleModeToggle}
+      autoScroll={autoScroll}
+    />
 
       {loading && <p>Loading...</p>}
       {error && <p className="error">{error}</p>}
@@ -107,8 +118,7 @@ function App() {
             <div
               key={item.bildnummer || "Contact support for image number"}
               className="card"
-              style={{ border: '1px solid #ccc', padding: '1rem' }}
-              ref={isLast && autoScroll ? lastItemRef : null} // Attach ref only to last item in infinite scroll mode
+              ref={isLast && autoScroll ? lastItemRef : null}
             >
               <img
                 src={item.thumbnail_url || "/placeholder.jpg"}
