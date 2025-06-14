@@ -1,14 +1,16 @@
-import React from 'react';
+// App.jsx
+import React, { useState } from 'react';
 import './App.scss';
 import Pagination from './components/Pagination';
 import SearchControl from './components/SearchControls';
 import AppHeader from './components/app/AppHeader';
 import LoadingErrorState from './components/app/LoadingErrorState';
 import ResultsGrid from './components/app/ResultsGrid';
+import ImageViewer from './components/ImageViewer';
 import useMediaSearch from './hooks/useMediaSearch';
 
 function App() {
-  // Use custom hook to manage all search logic and state
+  // Existing hook and state management for media search
   const {
     results,
     loading,
@@ -22,31 +24,34 @@ function App() {
     handleSearch
   } = useMediaSearch();
 
+  // New state for fullscreen viewer
+  const [viewerIndex, setViewerIndex] = useState(null);
+
+  // Handlers for image viewer
+  const openViewer = (idx) => setViewerIndex(idx);
+  const closeViewer = () => setViewerIndex(null);
+  const prevImage = () => setViewerIndex(i => (i === 0 ? results.length - 1 : i - 1));
+  const nextImage = () => setViewerIndex(i => (i === results.length - 1 ? 0 : i + 1));
+
   return (
     <div className="app">
-      {/* Page header with app title */}
       <AppHeader />
 
-      {/* Search input and controls:
-          handles user input and mode toggle (pagination vs infinite scroll) */}
       <SearchControl
         onSearch={handleSearch}
         onToggleMode={handleModeToggle}
         autoScroll={autoScroll}
       />
 
-      {/* Displays loading spinner or error message based on state */}
       <LoadingErrorState loading={loading} error={error} />
 
-      {/* Grid of media cards showing search results
-          Includes infinite scroll logic with last element ref */}
       <ResultsGrid
         results={results}
         autoScroll={autoScroll}
         setLastElement={setLastElement}
+        onCardClick={openViewer}
       />
 
-      {/* Pagination controls shown only when autoScroll is off and multiple pages exist */}
       {!autoScroll && totalPages > 1 && (
         <Pagination
           currentPage={page}
@@ -54,6 +59,15 @@ function App() {
           onPageChange={handlePageChange}
         />
       )}
+
+      {/* Image viewer modal */}
+      <ImageViewer
+        items={results}
+        currentIndex={viewerIndex}
+        onClose={closeViewer}
+        onPrev={prevImage}
+        onNext={nextImage}
+      />
     </div>
   );
 }
