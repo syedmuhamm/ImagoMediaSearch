@@ -53,11 +53,11 @@ def build_query(query=None, fotografen=None, datum_von=None, datum_bis=None, bil
         })
 
     if fotografen:
-        filter_.append({
-            "term": {
-                "fotografen": fotografen
-            }
-        })
+        if len(fotografen) == 1:
+            filter_.append({"term": {"fotografen": fotografen[0]}})
+        else:
+            filter_.append({"terms": {"fotografen": fotografen}})
+
 
     if datum_von or datum_bis:
         range_filter = {}
@@ -89,13 +89,14 @@ def search_media(query=None, page=1, page_size=10, fotografen=None,
     try:
         query_body = build_query(query, fotografen, datum_von, datum_bis, bildnummer)
 
-        # sort by bildnummer ascending for consistent pagination
+        # Sort by `bildnummer` and `_id` to ensure uniqueness for search_after
         query_body["sort"] = [
-            {"bildnummer": "asc"}
+            {"bildnummer": "asc"},
+            {"_id": "asc"}
         ]
 
         if search_after is not None:
-            query_body["search_after"] = [search_after]
+            query_body["search_after"] = search_after if isinstance(search_after, list) else [search_after]
         else:
             from_ = (page - 1) * page_size
             query_body["from"] = from_

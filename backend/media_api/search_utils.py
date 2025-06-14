@@ -1,6 +1,7 @@
-# media_api/search_utils.py
-
 from .es_client import search_media, normalize_hit
+import logging
+
+logger = logging.getLogger(__name__)
 
 def execute_media_search(
     query=None,
@@ -24,10 +25,15 @@ def execute_media_search(
     )
 
     results = [normalize_hit(hit) for hit in hits]
-    
-    # next_search_after is determined by the last hit's sort key,
-    # and this should be returned even for the initial load or page-based queries.
-    next_search_after = hits[-1]["sort"][0] if hits and "sort" in hits[-1] else None
+    next_search_after = hits[-1]["sort"] if hits and "sort" in hits[-1] else None
+
+    # 🔍 DEBUG LOGGING
+    logger.debug("-------- Elasticsearch Scroll Debug --------")
+    logger.debug("Current page: %s", page)
+    logger.debug("Search after received: %s", search_after)
+    logger.debug("Next search_after to return: %s", next_search_after)
+    logger.debug("Number of results returned: %s", len(results))
+    logger.debug("-------------------------------------------")
 
     return {
         "count": total,

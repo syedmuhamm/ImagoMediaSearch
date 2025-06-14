@@ -45,10 +45,14 @@ function App() {
         retries: 2
       });
 
-      setResults((prev) => (append ? [...prev, ...data.results] : data.results));
+      setResults((prev) => {
+        // Normalize results to array, since bildnummer search returns single object
+        const newResults = Array.isArray(data.results) ? data.results : [data.results];
+        return append ? [...prev, ...newResults] : newResults;
+      });
       setPage(data.page || 1);
       setTotalPages(Math.ceil(data.count / PAGE_SIZE));
-      setSearchAfter(data.next_search_after || null);
+      setSearchAfter(data.next_search_after ?? null);
     } catch (err) {
       if (err.name !== 'AbortError') {
         setError(err.message || 'Something went wrong.');
@@ -61,6 +65,7 @@ function App() {
   // Infinite scroll observer
   useEffect(() => {
     if (!autoScroll || loading || !searchAfter || !lastElement) return;
+    if (searchType === 'bildnummer') return; // no infinite scroll for unique id
 
     const observer = new IntersectionObserver(
       (entries) => {
@@ -105,6 +110,8 @@ function App() {
 
   const handleModeToggle = () => {
     const nextMode = !autoScroll;
+    
+    setLastElement(null); // Reset ref to avoid duplicate triggers
 
     if (!nextMode) {
       setResults((prev) => prev.slice(0, PAGE_SIZE));
@@ -119,6 +126,7 @@ function App() {
     setSearchAfter(null);
     setResults([]);
     setSearchType(type);
+    setLastElement(null); // Reset ref to avoid duplicate triggers
 
     if (type === 'date') {
       setDateRange({ startDate: q.startDate, endDate: q.endDate });
@@ -156,11 +164,18 @@ function App() {
       {error && <p className="error">{error}</p>}
 
       <div className="results-grid">
-        {results.map((item, idx) => {
+        {(results || []).map((item, idx) => {
+          if (!item) return null; // skip null or undefined
+
           const isLast = results.length === idx + 1;
+
+          // fallback keys if missing
+          const dbKey = item.db ?? 'unknown-db';
+          const bildnummerKey = item.bildnummer ?? 'unknown-bildnummer';
+
           return (
             <MediaCard
-              key={`${item.db}-${item.bildnummer}`} // ensure uniqueness
+              key={`${dbKey}-${bildnummerKey}-${idx}`}
               item={item}
               setRef={isLast && autoScroll ? (node) => setLastElement(node) : undefined}
             />

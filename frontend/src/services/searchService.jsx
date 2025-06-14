@@ -24,17 +24,24 @@ export async function searchMedia({
 
   let url = '';
   if (searchType === 'bildnummer') {
-    url = `${BASE_URL}/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}&page=${page}&page_size=${PAGE_SIZE}`;
+    url = `${BASE_URL}/search/by-bildnummer/?bildnummer=${encodeURIComponent(searchQuery)}`;
   } else if (searchType === 'photographer') {
     url = `${BASE_URL}/search/by-fotograf/?fotograf=${encodeURIComponent(searchQuery)}&page=${page}&page_size=${PAGE_SIZE}`;
+    if (autoScroll && searchAfter) {
+      url += `&search_after=${encodeURIComponent(JSON.stringify(searchAfter))}`;
+    }
   } else if (searchType === 'date') {
     url = `${BASE_URL}/search/by-datum/?datum_von=${startDate}&datum_bis=${endDate}&page=${page}&page_size=${PAGE_SIZE}`;
+    if (autoScroll && searchAfter) {
+      url += `&search_after=${encodeURIComponent(JSON.stringify(searchAfter))}`;
+    }
   } else {
     url = `${BASE_URL}/search/?q=${encodeURIComponent(searchQuery)}&page=${page}&page_size=${PAGE_SIZE}`;
     if (autoScroll && searchAfter) {
-      url += `&search_after=${searchAfter}`;
+      url += `&search_after=${encodeURIComponent(JSON.stringify(searchAfter))}`;
     }
   }
+
 
     for (let attempt = 0; attempt <= retries; attempt++) {
         try {
