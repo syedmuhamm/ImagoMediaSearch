@@ -134,21 +134,25 @@ LOGGING = {
         'console': {
             'class': 'logging.StreamHandler',
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': 'search_api.log',
+        },
     },
     'root': {
-        'handlers': ['console'],
-        'level': 'DEBUG',
+        'handlers': ['console', 'file'],
+        'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console'],
-            'level': 'INFO',  # Keep this as INFO to avoid spam from Django internals
+            'handlers': ['console', 'file'],
+            'level': 'INFO',
             'propagate': True,
         },
-        'media_api': {  # this should match your app's name
-            'handlers': ['console'],
-            'level': 'DEBUG',
-            'propagate': False,
+        'elasticsearch': {
+            'handlers': ['console', 'file'],
+            'level': 'WARNING',
+            'propagate': True,
         },
     },
 }

@@ -1,6 +1,10 @@
 from elasticsearch8 import Elasticsearch
 from elasticsearch8.exceptions import ConnectionError, TransportError
 import logging
+import urllib3
+
+
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -91,8 +95,8 @@ def search_media(query=None, page=1, page_size=10, fotografen=None,
 
         # Sort by `bildnummer` and `_id` to ensure uniqueness for search_after
         query_body["sort"] = [
-            {"bildnummer": "asc"},
-            {"_id": "asc"}
+            {"bildnummer": "desc"},
+            {"db": "asc"}
         ]
 
         if search_after is not None:

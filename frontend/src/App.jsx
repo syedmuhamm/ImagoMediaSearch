@@ -1,4 +1,3 @@
-// App.jsx
 import React, { useState } from 'react';
 import './App.scss';
 import Pagination from './components/Pagination';
