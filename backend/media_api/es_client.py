@@ -2,17 +2,19 @@ from elasticsearch8 import Elasticsearch
 from elasticsearch8.exceptions import ConnectionError, TransportError
 import logging
 import urllib3
+import os
+from dotenv import load_dotenv
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-
 logger = logging.getLogger(__name__)
+load_dotenv()
 
-ES_HOST = 'https://5.75.227.63:9200'
-ES_USER = 'elastic'
-ES_PASS = 'rQQtbktwzFqAJS1h8YjP'
-ES_INDEX = 'imago'
-BASE_THUMBNAIL_URL = "https://www.imago-images.de/bild"
+ES_HOST = os.getenv("ES_HOST")
+ES_USER = os.getenv("ES_USER")
+ES_PASS = os.getenv("ES_PASS")
+ES_INDEX = os.getenv("ES_INDEX")
+BASE_THUMBNAIL_URL = os.getenv("BASE_THUMBNAIL_URL")
 
 es = Elasticsearch(
     ES_HOST,
@@ -36,7 +38,7 @@ def normalize_hit(hit):
     source['thumbnail_url'] = build_thumbnail_url(db, bildnummer)
     return source
 
-# ========== Query Builders ==========
+#Query Builders
 
 def build_query(query=None, fotografen=None, datum_von=None, datum_bis=None, bildnummer=None):
     must = []
@@ -85,7 +87,7 @@ def build_query(query=None, fotografen=None, datum_von=None, datum_bis=None, bil
     }
     return query_body
 
-# ========== Search Handler ==========
+# Search Handle
 
 def search_media(query=None, page=1, page_size=10, fotografen=None,
                  datum_von=None, datum_bis=None, bildnummer=None,
@@ -93,7 +95,7 @@ def search_media(query=None, page=1, page_size=10, fotografen=None,
     try:
         query_body = build_query(query, fotografen, datum_von, datum_bis, bildnummer)
 
-        # Sort by `bildnummer` and `_id` to ensure uniqueness for search_after
+        # Sort by `bildnummer` and `db` to ensure uniqueness for search_after
         query_body["sort"] = [
             {"bildnummer": "desc"},
             {"db": "asc"}

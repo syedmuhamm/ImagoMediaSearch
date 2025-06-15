@@ -12,3 +12,5 @@ backend/*pyc
 
 # Others
 *.log
+.env
+
