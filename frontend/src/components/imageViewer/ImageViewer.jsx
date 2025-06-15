@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./ImageViewer.scss";
-import { ChevronLeft, ChevronRight, X, Copy } from "lucide-react";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 export default function ImageViewer({ items, currentIndex, onClose, onNext, onPrev }) {
   const [transition, setTransition] = useState("");
@@ -36,12 +36,14 @@ export default function ImageViewer({ items, currentIndex, onClose, onNext, onPr
     <div className="image-viewer-overlay" onClick={onClose}>
       <div className="image-viewer" onClick={(e) => e.stopPropagation()}>
         <button className="close-btn" onClick={onClose}><X size={28} /></button>
-        <button className="copy-btn" onClick={handleCopy}><Copy size={20} /></button>
 
-        <button className="nav-btn prev" onClick={() => {
-          setTransition("slide-left");
-          onPrev();
-        }}>
+        <button
+          className="nav-btn prev"
+          onClick={() => {
+            setTransition("slide-left");
+            onPrev();
+          }}
+        >
           <ChevronLeft size={32} />
         </button>
 
@@ -51,14 +53,22 @@ export default function ImageViewer({ items, currentIndex, onClose, onNext, onPr
           className={transition}
         />
 
-        <button className="nav-btn next" onClick={() => {
-          setTransition("slide-right");
-          onNext();
-        }}>
+        <button
+          className="nav-btn next"
+          onClick={() => {
+            setTransition("slide-right");
+            onNext();
+          }}
+        >
           <ChevronRight size={32} />
         </button>
 
         <div className="image-info">
+          {/* Copy button moved inside image-info */}
+          <button className="copy-btn" onClick={handleCopy}>
+            Copy image URL
+          </button>
+
           <p><strong>Bildnummer:</strong> {currentItem.bildnummer || "Unbekannt"}</p>
           <p><strong>Datum:</strong> {currentItem.datum?.slice(0, 10) || "Unbekannt"}</p>
           <p><strong>Fotograf:</strong> {currentItem.fotografen || "Nicht angegeben"}</p>

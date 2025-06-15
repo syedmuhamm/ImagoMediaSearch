@@ -1,0 +1,123 @@
+.image-viewer-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+
+
+  .image-viewer {
+    position: relative;
+    max-width: 90vw;
+    max-height: 90vh;
+    height: 80vh;
+    width: 140vh;
+    background: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .image-viewer img {
+    max-width: 100%;
+    max-height: 70vh;
+    margin: 0.5rem 0;
+    border-radius: 4px;
+    transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  }
+
+  .image-viewer img.slide-left {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  .image-viewer img.slide-right {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+
+  .close-btn, .copy-btn {
+    background: rgba(255, 255, 255, 0.6);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 2;
+    color: #333;
+    transition: background 0.2s ease-in-out;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  .close-btn {
+    position: absolute;
+    top: 3rem;
+    right: 3rem;
+    padding: 0.4rem;
+    left: auto;
+  }
+
+  .copy-btn {
+    position: absolute;
+    top: 0.2rem;
+    right: 0.2rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 4px;
+    font-weight: 600;
+    color: #333;
+    background: rgba(197, 195, 195, 0.9);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+    font-size: 0.9rem;
+    cursor: pointer;
+    font-weight: 600;
+    z-index: 10;
+    margin-top: 20px;
+    margin-right: 30px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 1);
+    }
+  }
+
+  .nav-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 2rem;
+    background: rgba(255, 255, 255, 0.6);
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    z-index: 2;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.9);
+    }
+  }
+
+  .nav-btn.prev {
+    left: 2rem;
+  }
+
+  .nav-btn.next {
+    right: 2rem;
+  }
+
+  .image-info {
+    position: relative;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #333;
+  }
+
+  p {
+    margin: 5px 0;
+  }
+}

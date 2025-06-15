@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import './App.scss';
-import Pagination from './components/Pagination';
-import SearchControl from './components/SearchControls';
 import AppHeader from './components/app/AppHeader';
 import LoadingErrorState from './components/app/LoadingErrorState';
 import ResultsGrid from './components/app/ResultsGrid';
-import ImageViewer from './components/ImageViewer';
 import useMediaSearch from './hooks/useMediaSearch';
+import SearchControl from './components/searchControl/SearchControls';
+import Pagination from './components/pagination/Pagination';
+import ImageViewer from './components/ImageViewer/ImageViewer';
 
 function App() {
+  
   // Existing hook and state management for media search
   const {
     results,

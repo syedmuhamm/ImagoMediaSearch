@@ -1,5 +1,5 @@
-// components/ResultsGrid.jsx
-import MediaCard from '../MediaCard';
+import MediaCard from '../mediaCard/MediaCard';
+import './ResultsGrid.scss'
 
 export default function ResultsGrid({ results, autoScroll, setLastElement, onCardClick }) {
   return (

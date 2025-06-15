@@ -3,9 +3,10 @@
 // search type. It supports pagination, infinite scroll via search_after,
 // request cancellation, and retry with exponential backoff.
 
-import { BASE_URL, PAGE_SIZE } from '../config';
+import {  PAGE_SIZE } from '../config';
 
 const controllerMap = new Map();
+const BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export async function searchMedia({
   searchQuery,
