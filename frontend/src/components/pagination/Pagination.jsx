@@ -11,7 +11,7 @@
  * - onPageChange: callback to change to a different page
  */
 
-import './Pagination.scss';
+import './pagination.scss';
 
 function Pagination({ currentPage, totalPages, onPageChange }) {
   const maxPagesToShow = 7;
