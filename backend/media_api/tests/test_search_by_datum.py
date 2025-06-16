@@ -11,7 +11,6 @@ def test_search_by_datum(http_session, api_base_url):
 def test_search_by_datum_returns_no_results_for_empty_range(http_session, api_base_url):
     url = f"{api_base_url}/search/by-datum/"
     
-    # Pick an unrealistic historical range (e.g., before your dataset begins)
     params = {"datum_von": "2042-01-01", "datum_bis": "2042-01-05"}
     response = http_session.get(url, params=params)
     

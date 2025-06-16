@@ -1,16 +1,16 @@
 .search-control {
   position: sticky;
   top: 0;
-  z-index: 1000;               /* stay above other content */
-  background: white;           /* avoid transparency */
-  padding: 1rem 0.5rem;        /* add some vertical padding */
+  z-index: 1000;             
+  background: white;           
+  padding: 1rem 0.5rem;        
   border-bottom: 1px solid #ddd;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);  /* subtle shadow */
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 
   display: flex;
   flex-wrap: wrap;
   gap: 1rem;
-  align-items: center; /* vertically center */
+  align-items: center;
   margin-bottom: 1.5rem;
 
   input[type='text'],
@@ -25,23 +25,23 @@
   }
 
   select {
-    width: 160px; /* fixed width for dropdown */
+    width: 160px; 
   }
 
   .date-range {
     display: flex;
     gap: 1rem;
-    align-items: center; /* vertically center */
+    align-items: center; 
 
     label {
       display: flex;
-      align-items: center; /* label text + input inline and centered */
+      align-items: center; 
       gap: 0.3rem;
       font-size: 0.9rem;
       color: #444;
 
       input[type='date'] {
-        margin-top: 0; /* remove default margin */
+        margin-top: 0; 
         padding: 0 0.75rem;
         font-size: 1rem;
         border-radius: 8px;

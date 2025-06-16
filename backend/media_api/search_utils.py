@@ -27,7 +27,7 @@ def execute_media_search(
     results = [normalize_hit(hit) for hit in hits]
     next_search_after = hits[-1]["sort"] if hits and "sort" in hits[-1] else None
 
-    # 🔍 DEBUG LOGGING
+    # Debug logging
     logger.debug("-------- Elasticsearch Scroll Debug --------")
     logger.debug("Current page: %s", page)
     logger.debug("Search after received: %s", search_after)

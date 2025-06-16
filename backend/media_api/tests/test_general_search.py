@@ -34,7 +34,6 @@ def test_result_fields_structure_is_invalid_if_keys_missing():
         "bildnummer": "123456",
         "datum": "2024-01-01T00:00:00.000Z",
         "suchtext": "Sample",
-        # Missing keys: hoehe, breite, fotografen, db, thumbnail_url
     }
 
     expected_keys = {

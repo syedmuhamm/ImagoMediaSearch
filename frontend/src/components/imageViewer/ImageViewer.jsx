@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import "./ImageViewer.scss";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
@@ -64,7 +64,6 @@ export default function ImageViewer({ items, currentIndex, onClose, onNext, onPr
         </button>
 
         <div className="image-info">
-          {/* Copy button moved inside image-info */}
           <button className="copy-btn" onClick={handleCopy}>
             Copy image URL
           </button>

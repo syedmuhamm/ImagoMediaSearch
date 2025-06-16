@@ -1,10 +1,13 @@
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status, throttling, serializers
-from .search_utils import execute_media_search
 import logging
 from datetime import datetime
+
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, throttle_classes
+from rest_framework.response import Response
+from rest_framework import status, serializers
+from rest_framework.throttling import AnonRateThrottle
+
+from .search_utils import execute_media_search
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +44,7 @@ class MediaSearchParamsSerializer(serializers.Serializer):
         return data
 
 class MediaSearchAPIView(APIView):
-    throttle_classes = [throttling.AnonRateThrottle]
+    throttle_classes = [AnonRateThrottle]
 
     def get(self, request):
         serializer = MediaSearchParamsSerializer(data=request.GET)
@@ -120,6 +123,7 @@ class MediaSearchAPIView(APIView):
 
 
 @api_view(['GET'])
+@throttle_classes([AnonRateThrottle])
 def search_by_fotograf(request):
     fotograf = request.GET.get("fotograf")
     page = int(request.GET.get("page", 1))
@@ -151,6 +155,7 @@ def search_by_fotograf(request):
         return Response({"error": str(e)}, status=500)
 
 @api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
 def search_by_datum(request):
     try:
         datum_von_raw = request.GET.get("datum_von")
@@ -184,6 +189,7 @@ def search_by_datum(request):
         return Response({'error': 'Search by datum failed.'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 @api_view(["GET"])
+@throttle_classes([AnonRateThrottle])
 def search_by_bildnummer(request):
     bildnummer = request.GET.get("bildnummer")
     if not bildnummer:
