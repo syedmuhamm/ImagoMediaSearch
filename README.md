@@ -4,7 +4,7 @@ A full-stack application that allows users to search and view media content stor
 
 ---
 
-## 🔗 Live Demo
+## 🔗 Live Demo: gitpods are disabled after 30 minutes. 
 
 * **Frontend (React):** [Open UI](https://5173-syedmuhamm-imagomediase-2dhunufqken.ws-eu120.gitpod.io)
 * **Backend (Django + Elasticsearch):** [API Endpoint](https://8000-syedmuhamm-imagomediase-2dhunufqken.ws-eu120.gitpod.io/api/media/search/?q=pal&page=1&page_size=5)
