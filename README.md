@@ -109,8 +109,8 @@ Then open the app in your browser: [http://localhost:5173](http://localhost:5173
 ### Backend
 
 ```bash
-cd backend/
-pytest
+cd backend/media_api
+pytest tests
 ```
 
 ### Frontend
