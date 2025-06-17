@@ -47,7 +47,10 @@ pip install -r requirements.txt
 
 ### 3. Configure `.env` file
 
-Update the `backend.env` file with the desired backend port (default is `8000`):
+Change .env.backend in /backend to .env : "since .env file is ignored while committing". 
+Change .env.frontend in /frontend to .env
+
+Update the `backend.env` now `.env` file with the desired backend port (default is `8000`):
 
 You can launch the backend on a different port by running:
 
